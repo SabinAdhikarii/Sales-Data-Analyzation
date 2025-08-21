@@ -1,0 +1,29 @@
+2025-08-17 10:07:41,574 [ERROR   ] [MainThread  ] Usage: python load/execute.py <input_dir> [pg_un] [pg_pw]
+2025-08-17 10:09:05,915 [ERROR   ] [MainThread  ] Invalid directory: python
+2025-08-17 10:09:37,149 [INFO    ] [MainThread  ] ETL Load process started
+2025-08-17 10:09:55,497 [ERROR   ] [MainThread  ] Error resetting database: connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  database "sales-data-analysis" does not exist
+
+2025-08-17 10:09:55,498 [ERROR   ] [MainThread  ] ETL Load failed: Database reset failed
+2025-08-17 10:09:56,195 [INFO    ] [MainThread  ] Spark stopped
+2025-08-17 10:17:23,880 [ERROR   ] [MainThread  ] Usage: python load/execute.py <input_dir> [pg_un] [pg_pw]
+2025-08-17 10:17:30,594 [ERROR   ] [MainThread  ] Invalid directory: /path/to/transform
+2025-08-17 10:18:48,227 [INFO    ] [MainThread  ] ETL Load process started
+2025-08-17 10:18:57,052 [ERROR   ] [MainThread  ] Error resetting database: connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  database "sales-data-analysis" does not exist
+
+2025-08-17 10:18:57,053 [ERROR   ] [MainThread  ] ETL Load failed: Database reset failed
+2025-08-17 10:18:57,661 [INFO    ] [MainThread  ] Spark stopped
+2025-08-17 10:20:26,633 [INFO    ] [MainThread  ] ETL Load process started
+2025-08-17 10:20:36,263 [ERROR   ] [MainThread  ] Error resetting database: connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  database "sales-data-analysis" does not exist
+
+2025-08-17 10:20:36,263 [ERROR   ] [MainThread  ] ETL Load failed: Database reset failed
+2025-08-17 10:20:36,980 [INFO    ] [MainThread  ] Spark stopped
+2025-08-17 10:23:31,442 [ERROR   ] [MainThread  ] Usage: python load/execute.py <input_dir> [pg_un] [pg_pw]
+2025-08-17 10:23:38,990 [INFO    ] [MainThread  ] ETL Load process started
+2025-08-17 10:23:47,736 [INFO    ] [MainThread  ] Tables created successfully
+2025-08-17 10:32:13,372 [INFO    ] [MainThread  ] Successfully loaded orders_fact
+2025-08-17 10:32:16,986 [INFO    ] [MainThread  ] Successfully loaded products_dim
+2025-08-17 10:32:17,910 [INFO    ] [MainThread  ] Successfully loaded aisles_dim
+2025-08-17 10:32:18,635 [INFO    ] [MainThread  ] Successfully loaded departments_dim
+2025-08-17 10:32:18,638 [INFO    ] [MainThread  ] 
+ETL Load completed in 0h 8m 39s
+2025-08-17 10:32:19,288 [INFO    ] [MainThread  ] Spark stopped

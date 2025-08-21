@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Instacart Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-top: 40px; }
+    canvas { max-width: 800px; margin: 20px auto; display: block; }
+  </style>
+</head>
+<body>
+  <h1>📊 Instacart Sales Dashboard</h1>
+
+  <h2>Orders per Department</h2>
+  <canvas id="deptChart"></canvas>
+
+  <h2>Top 10 Products</h2>
+  <canvas id="productChart"></canvas>
+
+  <h2>Orders per Day of Week</h2>
+  <canvas id="dayChart"></canvas>
+
+  <script>
+    async function loadChart(endpoint, chartId, type, label) {
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      new Chart(document.getElementById(chartId), {
+        type: type,
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: label,
+            data: data.values,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+          }]
+        }
+      });
+    }
+
+    loadChart("/api/orders_per_department", "deptChart", "bar", "Total Orders");
+    loadChart("/api/top_products", "productChart", "bar", "Order Count");
+    loadChart("/api/orders_per_day", "dayChart", "line", "Total Orders");
+  </script>
+</body>
+</html>
