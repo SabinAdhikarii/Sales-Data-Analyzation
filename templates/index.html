@@ -1,47 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Instacart Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>Instacart ETL Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/font/lucide.css" rel="stylesheet"/>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { margin-top: 40px; }
-    canvas { max-width: 800px; margin: 20px auto; display: block; }
+    :root {
+      --bg: #0f172a;         /* slate-900 */
+      --panel: #111827;      /* gray-900 */
+      --muted: #000000;      /* gray-800 */
+      --text: #e5e7eb;       /* gray-200 */
+      --subtle: #000000;     /* gray-400 */
+      --accent: #60a5fa;     /* blue-400 */
+      --success: #34d399;    /* emerald-400 */
+      --error: #f87171;      /* red-400 */
+      --warn: #f59e0b;       /* amber-500 */
+      --card: #0b1220;
+      --ring: rgba(96,165,250,.35);
+    }
+
+    * { 
+      box-sizing: border-box;
+    }
+     body {
+      margin: 0;
+      background: white;   /* Pure white background */
+      color: black;        /* All text black */
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+   .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: white; 
+      border-right: 1px solid #ddd; 
+      padding: 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .brand-badge {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      border-radius: 12px;
+      background: #007bff; /* blue badge */
+      color: white;
+      font-weight: 700;
+    }
+    .brand h1 { font-size: 18px; margin: 0; }
+
+    .nav h2 {
+      font-size: 12px; text-transform: uppercase;
+      letter-spacing: .12em;
+      margin: 18px 8px 8px;
+      color: #000000;
+    }
+    .nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px;
+      color: black; text-decoration: none; font-size: 14px;
+    }
+
+    .nav a:hover { background: #f3f3f3; }
+
+    /* Main */
+    .main { padding: 24px 28px; }
+
+    /* Topbar */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; margin-bottom: 18px;
+    }
+    .title h2 { margin: 0; font-size: 22px; font-weight: 700; }
+    .title p { margin: 4px 0 0; color: #000000; font-size: 13px; }
+
+    .top-actions {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .chip {
+      padding: 8px 12px; border-radius: 999px;
+      background: #f5f5f5; border: 1px solid #ddd;
+      color: #000000; font-size: 12px;
+    }
+
+    /* KPI cards */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin: 14px 0 22px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .kpi-label { color: #000000; font-size: 12px; }
+    .kpi-value { font-size: 22px; font-weight: 800; margin-top: 6px; }
+
+    /* ETL status */
+    .etl {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .status-row {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #eee; padding: 8px 0;
+    }
+    .status-left { display: flex; align-items: center; gap: 10px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.success { background: #28a745; }
+    .dot.error { background: #dc3545; }
+    .dot.running { background: #ffc107; }
+    .dot.unknown { background: #000000; }
+    .status-right { color: #000000; font-size: 12px; }
+    .small { font-size: 12px; color: #000000; margin-top: 4px; }
+
+    /* Charts area */
+    .charts {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      grid-auto-rows: minmax(360px, auto);
+      gap: 14px;
+      margin: 8px 0 24px;
+    }
+    .chart-card { padding: 14px; }
+    .chart-card h3 { margin: 0 0 8px; font-size: 15px; color: black; }
+
+    /* Footer */
+    .foot {
+      color: #000000; font-size: 12px; text-align: center; margin-top: 16px;
+    }
+
+
+    @media (max-width: 1200px) {
+      .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .etl { grid-template-columns: 1fr; }
+      .charts { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+    }
   </style>
 </head>
 <body>
-  <h1>📊 Instacart Sales Dashboard</h1>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">IC</div>
+        <h1>Instacart ETL</h1>
+      </div>
+      <div class="nav">
+        <h2>Overview</h2>
+        <a href="#"><i class="lucide lucide-layout-dashboard"></i> Dashboard</a>
+        <h2>Data</h2>
+        <a href="#charts"><i class="lucide lucide-bar-chart-3"></i> Charts</a>
+        <h2>System</h2>
+        <a href="#etl"><i class="lucide lucide-cog"></i> ETL Status</a>
+      </div>
+    </aside>
 
-  <h2>Orders per Department</h2>
-  <canvas id="deptChart"></canvas>
+    <!-- Main -->
+    <main class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="title">
+          <h2>Sales & ETL Control Room</h2>
+          <p>Live metrics synced from PostgreSQL and ETL logs. Auto-refreshes every 15s.</p>
+        </div>
+        <div class="top-actions">
+          <div class="chip" id="last-refresh">Last refresh: …</div>
+          <div class="chip">DB: instacart</div>
+        </div>
+      </div>
 
-  <h2>Top 10 Products</h2>
-  <canvas id="productChart"></canvas>
+      <!-- KPIs -->
+      <section class="kpis" id="kpis">
+        <div class="card">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-value" id="kpi-orders">—</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Unique Users</div>
+          <div class="kpi-value" id="kpi-users">—</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Products</div>
+          <div class="kpi-value" id="kpi-products">—</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Aisles</div>
+          <div class="kpi-value" id="kpi-aisles">—</div>
+        </div>
+        <div class="card">
+          <div class="kpi-label">Departments</div>
+          <div class="kpi-value" id="kpi-departments">—</div>
+        </div>
+      </section>
 
-  <h2>Orders per Day of Week</h2>
-  <canvas id="dayChart"></canvas>
+      <!-- ETL Status -->
+      <section class="etl" id="etl">
+        <div class="card status">
+          <div class="status-row">
+            <div class="status-left">
+              <span class="dot unknown" id="dot-extract"></span>
+              <strong>Extract</strong>
+            </div>
+            <div class="status-right" id="time-extract">—</div>
+          </div>
+          <div class="small" id="msg-extract">Waiting for logs…</div>
+        </div>
+        <div class="card status">
+          <div class="status-row">
+            <div class="status-left">
+              <span class="dot unknown" id="dot-transform"></span>
+              <strong>Transform</strong>
+            </div>
+            <div class="status-right" id="time-transform">—</div>
+          </div>
+          <div class="small" id="msg-transform">Waiting for logs…</div>
+        </div>
+        <div class="card status">
+          <div class="status-row">
+            <div class="status-left">
+              <span class="dot unknown" id="dot-load"></span>
+              <strong>Load</strong>
+            </div>
+            <div class="status-right" id="time-load">—</div>
+          </div>
+          <div class="small" id="msg-load">Waiting for logs…</div>
+        </div>
+      </section>
+
+      <!-- Charts -->
+      <section class="charts" id="charts">
+        <div class="card chart-card">
+          <h3>Orders per Department</h3>
+          <canvas id="deptChart"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h3>Top 10 Products</h3>
+          <canvas id="productChart"></canvas>
+        </div>
+        <div class="card chart-card" style="grid-column: 1 / -1;">
+          <h3>Orders per Day of Week</h3>
+          <canvas id="dayChart"></canvas>
+        </div>
+      </section>
+
+      <div class="foot">
+        Built with Flask + Chart.js • Monitors logs in <code>/logs</code> and data artifacts in your ETL folders.
+      </div>
+    </main>
+  </div>
 
   <script>
-    async function loadChart(endpoint, chartId, type, label) {
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      new Chart(document.getElementById(chartId), {
-        type: type,
-        data: {
-          labels: data.labels,
-          datasets: [{
-            label: label,
-            data: data.values,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)'
-          }]
-        }
-      });
+
+const chartOptions = {
+  plugins: {
+    legend: {
+      labels: {
+        color: '#000' // Black text for legend
+      }
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: '#000' // Black text for x-axis labels
+      },
+      title: {
+        color: '#000' // Black text for x-axis title (if used)
+      }
+    },
+    y: {
+      ticks: {
+        color: '#000' // Black text for y-axis labels
+      },
+      title: {
+        color: '#000' // Black text for y-axis title (if used)
+      }
+    }
+  }
+};
+
+    // ---------------------- Utilities ----------------------
+    function setDot(el, status) {
+      el.classList.remove('success','error','running','unknown');
+      el.classList.add(status || 'unknown');
+    }
+    function fmt(n) {
+      return (n ?? 0).toLocaleString();
+    }
+    function nowStr(){
+      const d = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
-    loadChart("/api/orders_per_department", "deptChart", "bar", "Total Orders");
-    loadChart("/api/top_products", "productChart", "bar", "Order Count");
-    loadChart("/api/orders_per_day", "dayChart", "line", "Total Orders");
+    // ---------------------- Charts ----------------------
+    let deptChart, productChart, dayChart;
+
+    async function loadChart(endpoint, chart, configBuilder) {
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      const cfg = configBuilder(data);
+      if (chart) { chart.destroy(); }
+      return new Chart(cfg.ctx, cfg.config);
+    }
+
+    function barConfig(labels, values, label) {
+      return {
+        type: 'bar',
+        data: { labels, datasets: [{ label, data: values }] },
+        options: chartOptions, 
+          scales: {
+            x: { ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(255,255,255,.06)'} },
+            y: { ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(255,255,255,.06)'}, beginAtZero: true }
+          }
+        }
+      };
+
+    function lineConfig(labels, values, label) {
+      return {
+        type: 'line',
+        data: { labels, datasets: [{ label, data: values, tension: .35, fill: false }] },
+       options: chartOptions,
+          scales: {
+            x: { ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(255,255,255,.06)'} },
+            y: { ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(255,255,255,.06)'}, beginAtZero: true }
+          }
+        }
+      };
+
+    async function renderCharts() {
+      deptChart = await loadChart("/api/orders_per_department", deptChart, (data) => ({
+        ctx: document.getElementById("deptChart").getContext("2d"),
+        config: barConfig(data.labels, data.values, "Total Orders")
+      }));
+
+      productChart = await loadChart("/api/top_products?limit=10", productChart, (data) => ({
+        ctx: document.getElementById("productChart").getContext("2d"),
+        config: barConfig(data.labels, data.values, "Order Count")
+      }));
+
+      dayChart = await loadChart("/api/orders_per_day", dayChart, (data) => ({
+        ctx: document.getElementById("dayChart").getContext("2d"),
+        config: lineConfig(data.labels, data.values, "Total Orders")
+      }));
+    }
+
+    // ---------------------- KPIs ----------------------
+    async function refreshKpis() {
+      const res = await fetch("/api/kpis");
+      const data = await res.json();
+      document.getElementById("kpi-orders").textContent = fmt(data.total_orders);
+      document.getElementById("kpi-users").textContent = fmt(data.unique_users);
+      document.getElementById("kpi-products").textContent = fmt(data.unique_products);
+      document.getElementById("kpi-aisles").textContent = fmt(data.aisles);
+      document.getElementById("kpi-departments").textContent = fmt(data.departments);
+    }
+
+    // ---------------------- ETL Status ----------------------
+    function statusToClass(s) {
+      if (s === 'success') return 'success';
+      if (s === 'error') return 'error';
+      if (s === 'running') return 'running';
+      return 'unknown';
+    }
+
+    async function refreshEtl() {
+      const res = await fetch("/api/etl/status");
+      const st = await res.json();
+
+      const extractDot = document.getElementById("dot-extract");
+      const transformDot = document.getElementById("dot-transform");
+      const loadDot = document.getElementById("dot-load");
+
+      setDot(extractDot, statusToClass(st.extract.status));
+      setDot(transformDot, statusToClass(st.transform.status));
+      setDot(loadDot, statusToClass(st.load.status));
+
+      document.getElementById("time-extract").textContent = st.extract.last_time || "—";
+      document.getElementById("time-transform").textContent = st.transform.last_time || "—";
+      document.getElementById("time-load").textContent = st.load.last_time || "—";
+
+      document.getElementById("msg-extract").textContent = (st.extract.last_line || "No logs found.");
+      document.getElementById("msg-transform").textContent = (st.transform.last_line || "No logs found.");
+      document.getElementById("msg-load").textContent = (st.load.last_line || "No logs found.");
+    }
+
+    // ---------------------- Bootstrap ----------------------
+    async function refreshAll() {
+      await Promise.all([refreshKpis(), refreshEtl()]);
+      document.getElementById("last-refresh").textContent = "Last refresh: " + nowStr();
+    }
+
+    (async function init() {
+      await renderCharts();
+      await refreshAll();
+      // refresh KPI + ETL every 15s
+      setInterval(refreshAll, 15000);
+    })();
   </script>
 </body>
 </html>
