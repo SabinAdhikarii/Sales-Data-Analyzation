@@ -1,4 +1,4 @@
-# Slales-Data-Analyzation
+# Sales-Data-Analyzation
 
 # Instacart Sales Data Analysis - ETL Pipeline & Dashboard
 
