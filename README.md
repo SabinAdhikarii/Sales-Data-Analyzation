@@ -166,6 +166,9 @@ The web dashboard provides:
    - Top products
    - Orders per day of week
 4. **Auto-refresh**: Data updates every 15 seconds
+<img width="1850" height="826" alt="Screenshot from 2025-08-25 14-10-28" src="https://github.com/user-attachments/assets/f9b11193-0712-4108-be76-651052291e9b" />
+<img width="1850" height="826" alt="Screenshot from 2025-08-25 14-10-46" src="https://github.com/user-attachments/assets/2b43e7c2-cf41-42d6-901b-dd4b172ec132" />
+
 
 ## Configuration
 
